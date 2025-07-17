@@ -10,10 +10,15 @@ typedef struct filename_chain_tag
     struct filename_chain_tag* next;
 } filename_chain;
 
+typedef struct param_check_return_tag
+{
+    filename_chain * chain;
+    char * command;
+} param_check_return;
+
 static int verbose = 0;
 static int force_newline = 0;
 static int show_filename = 0;
-static char* command = NULL;
 
 void error_msg(const char* format, ...)
 {
@@ -33,17 +38,26 @@ void free_up(filename_chain* chain)
     }
 }
 
-filename_chain* param_check(int argc, char** argv)
+param_check_return param_check(int argc, char** argv)
 {
+    param_check_return return_value;
+    char* command;
     int i;
+    filename_chain* head;
+    filename_chain* tail;
+
+    return_value.chain = NULL;
+    return_value.command = NULL;
+
+    command = NULL;
+    head = NULL;
+    tail = NULL;
 
     if (argc == 1)
     {
         error_msg("%s : [Error] Parameters are missing. Please run with '%s -h' for help.\n", basename(argv[0]), basename(argv[0]));
         exit(EXIT_FAILURE);
     }
-
-    filename_chain *head = NULL, *tail = NULL;
 
     for ( i = 1; i < argc; i++)
     {
@@ -54,7 +68,6 @@ filename_chain* param_check(int argc, char** argv)
                 error_msg("%s : [Error] Illegal argument, '-e' should not be the last argument.\n", basename(argv[0]));
                 exit(EXIT_FAILURE);
             }
-            free(command);
             command = strdup(argv[i]);
             if (!command)
             {
@@ -118,15 +131,21 @@ filename_chain* param_check(int argc, char** argv)
         }
     }
 
-    return head;
+    return_value.chain = head;
+    return_value.command = command;
+    return return_value;
 }
 
 int main(int argc, char** argv)
 {
     filename_chain* chain;
+    char* command;
+    param_check_return param_check_result;
     int result ;
-    
-    chain = param_check(argc, argv);
+
+    param_check_result = param_check(argc, argv);
+    chain = param_check_result.chain;
+    command = param_check_result.command;
 
     if (!chain || !command)
     {
