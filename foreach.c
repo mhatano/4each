@@ -20,6 +20,8 @@ static int verbose = 0;
 static int force_newline = 0;
 static int show_filename = 0;
 
+void error_msg(const char* format, ...) __attribute__((format(printf, 1, 2)));
+
 void error_msg(const char* format, ...)
 {
     va_list args;
