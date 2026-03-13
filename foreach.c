@@ -19,7 +19,6 @@ typedef struct param_check_return_tag
 static int verbose = 0;
 static int force_newline = 0;
 static int show_filename = 0;
-static char* command = NULL;
 static char* cmdname = NULL;
 
 #define err_msg(fmt,...) error_msg(__func__,fmt,##__VA_ARGS__)
@@ -88,21 +87,32 @@ void free_up(filename_chain* chain)
 param_check_return param_check(int argc, char** argv)
 {
     param_check_return return_value;
-    char* command;
     int i;
     filename_chain* head;
     filename_chain* tail;
+    char *command = NULL;
 
     return_value.chain = NULL;
     return_value.command = NULL;
 
-    command = NULL;
     head = NULL;
     tail = NULL;
 
     if (argc == 1)
     {
-        error_msg("%s : [Error] Parameters are missing. Please run with '%s -h' for help.\n", cmdname, cmdname);
+        err_msg("%s : [Error] Parameters are missing. Please run with '%s -h' for help.\n", cmdname, cmdname);
+        exit(EXIT_FAILURE);
+    }
+
+    if ( !cmdname && argv[0] != NULL )
+    {
+        char *tmpcmd = strdup(argv[0]);
+        cmdname = strdup(basename(tmpcmd));
+        free(tmpcmd);
+    }
+    else
+    {
+        err_msg("%s : [Error] No command name available.\n", cmdname);
         exit(EXIT_FAILURE);
     }
 
@@ -112,13 +122,13 @@ param_check_return param_check(int argc, char** argv)
         {
             if (++i >= argc)
             {
-                error_msg("%s : [Error] Illegal argument, '-e' should not be the last argument.\n", cmdname);
+                err_msg("%s : [Error] Illegal argument, '-e' should not be the last argument.\n", cmdname);
                 exit(EXIT_FAILURE);
             }
             command = strdup(argv[i]);
             if (!command)
             {
-                error_msg("%s : [Error] Memory could not be allocated.\n", cmdname);
+                err_msg("%s : [Error] Memory could not be allocated.\n", cmdname);
                 exit(EXIT_FAILURE);
             }
         }
@@ -150,7 +160,7 @@ param_check_return param_check(int argc, char** argv)
             filename_chain* node = calloc(1, sizeof(filename_chain));
             if (!node)
             {
-                error_msg("%s : [Error] Memory could not be allocated.\n", cmdname);
+                err_msg("%s : [Error] Memory could not be allocated.\n", cmdname);
                 free_up(head);
                 free(command);
                 exit(EXIT_FAILURE);
@@ -158,7 +168,7 @@ param_check_return param_check(int argc, char** argv)
             node->filename = strdup(argv[i]);
             if (!node->filename)
             {
-                error_msg("%s : [Error] Memory could not be allocated.\n", cmdname);
+                err_msg("%s : [Error] Memory could not be allocated.\n", cmdname);
                 free(node);
                 free_up(head);
                 free(command);
@@ -186,8 +196,8 @@ param_check_return param_check(int argc, char** argv)
 int main(int argc, char** argv)
 {
     filename_chain* chain;
-    char* command;
     param_check_return param_check_result;
+    char* command = NULL;
     int result ;
 
     if ( argv[0] == NULL )
@@ -206,7 +216,7 @@ int main(int argc, char** argv)
 
     if (!chain || !command)
     {
-        error_msg("%s : [Error] No files or command specified.\n",cmdname);
+        err_msg("%s : [Error] No files or command specified.\n",cmdname);
         free_up(chain);
         free(command);
         free(cmdname);
@@ -226,7 +236,7 @@ int main(int argc, char** argv)
         char* current_command = malloc(cmd_len);
         if (!current_command)
         {
-            error_msg("%s : [Error] Memory allocation error during command construction.\n",cmdname);
+            err_msg("%s : [Error] Memory allocation error during command construction.\n",cmdname);
             free_up(chain);
             free(command);
             free(cmdname);
@@ -242,14 +252,13 @@ int main(int argc, char** argv)
         else if (show_filename)
         {
             showfname_msg("file: %s\n", current->filename);
-            showfname_flush();
         }
 
 
         result = system(current_command);
         if ( result == -1 )
         {
-            error_msg("%s : [Error] Command execution failed for '%s'.\n", cmdname, current->filename);
+            err_msg("%s : [Error] Command execution failed for '%s'.\n", cmdname, current->filename);
         }
 
         if (force_newline)

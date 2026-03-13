@@ -1,1 +1,18 @@
-/4each
+# Build Directory
+build/
+
+# Object files
+*.o
+
+# Executable
+4each
+
+# CMake Artifacts
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+install_manifest.txt
+Makefile
+!makefile
+CTestTestfile.cmake
+compile_commands.json
