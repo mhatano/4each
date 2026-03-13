@@ -30,7 +30,7 @@ void error_msg(const char* func, const char* format, ...)
 {
     va_list args;
     va_start(args, format);
-    char *fnc_fmt = malloc(strlen(cmdname) + strlen(func) + strlen(format) + 1);
+    char *fnc_fmt = malloc(strlen(cmdname) + strlen(func) + strlen(format) + 7);
     if (!fnc_fmt)
     {
         fprintf(stderr,"%s : [Error] Memory could not be allocated.\n", cmdname);
@@ -51,7 +51,7 @@ void verbose_msg(const char* func, const char* format, ...)
 {
     va_list args;
     va_start(args, format);
-    char *fnc_fmt = malloc(strlen(cmdname) + strlen(func) + strlen(format) + 1);
+    char *fnc_fmt = malloc(strlen(cmdname) + strlen(func) + strlen(format) + 7);
     if (!fnc_fmt)
     {
         printf("%s : [Error] Memory could not be allocated.\n", cmdname);
@@ -70,16 +70,8 @@ void showfname_msg(const char* format, ...)
 {
     va_list args;
     va_start(args, format);
-    char *fnc_fmt = malloc(strlen(cmdname) + strlen(func) + strlen(format) + 1);
-    if (!fnc_fmt)
-    {
-        printf("%s : [Error] Memory could not be allocated.\n", cmdname);
-        exit(EXIT_FAILURE);
-    }
-    snprintf(fnc_fmt, strlen(cmdname) + strlen(func) + strlen(format) + 1, "%s : %s : %s", cmdname, func, format);
-    vprintf(fnc_fmt, args);
+    vprintf(format, args);
     fflush(stdout);
-    free(fnc_fmt);
     va_end(args);
 }
 
@@ -144,13 +136,13 @@ param_check_return param_check(int argc, char** argv)
         }
         else if (strcmp(argv[i], "-h") == 0)
         {
-            error_msg("%s : Run quick command for each argument.\n", cmdname);
-            error_msg("Usage: %s [-h] [-s] [-f] [-v] -e 'command' filenames...\n", cmdname);
-            error_msg("  -h : Show help message.\n");
-            error_msg("  -s : Show filename before processing.\n");
-            error_msg("  -f : Force newline after command execution.\n");
-            error_msg("  -v : Verbose output.\n");
-            error_msg("  -e <command> : Specify command to run.\n");
+            vrbs_msg("%s : Run quick command for each argument.\n", cmdname);
+            vrbs_msg("Usage: %s [-h] [-s] [-f] [-v] -e 'command' filenames...\n", cmdname);
+            vrbs_msg("  -h : Show help message.\n");
+            vrbs_msg("  -s : Show filename before processing.\n");
+            vrbs_msg("  -f : Force newline after command execution.\n");
+            vrbs_msg("  -v : Verbose output.\n");
+            vrbs_msg("  -e <command> : Specify command to run.\n");
             exit(EXIT_SUCCESS);
         }
         else
